@@ -1,0 +1,17 @@
+{
+    "name": "virtualorz/cate",
+    "authors": [
+        {
+            "name": "virtualorz",
+            "email": "virtualorz@gmail.com"
+        }
+    ],
+    "require": {
+        "virtualorz/fileupload": "^1.0"
+    },
+    "autoload": {
+        "psr-4": {
+            "Virtualorz\\Cate\\": "src/"
+        }
+    }
+}
