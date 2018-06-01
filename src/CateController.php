@@ -173,7 +173,7 @@ class Cate
                     ]);
                 $order = 1;
             }
-            else
+            else if(Request::input('cate-order',0) != 0)
             {//位於誰後面
                 $data_order = DB::table('cate')
                     ->select([
@@ -414,24 +414,24 @@ class Cate
                 $dataSet_cate[$k]->lang = $dataSet_lang;
                 $dataSet_cate[$k]->chlid_list = $child_list[1];
 
+                array_push($dataSet_cate_backend,$v);
+                array_push($dataSet_cate_front,$v);
+                $level_text = '';
+                for($i=1;$i<=$level;$i++)
+                {
+                    $level_text .= '-';
+                }
+                foreach($child_list[1] as $k1=>$v1)
+                {
+                    $child_list[1][$k1]->name = $level_text . $v1->name;
+                    array_push($dataSet_cate_backend,$child_list[1][$k1]);
+                }
+                
                 if($v->enable == 1)
                 {
-                    array_push($dataSet_cate_backend,$v);
+
                     array_push($dataSet_cate_front,$v);
-                    $level_text = '';
-                    for($i=1;$i<=$level;$i++)
-                    {
-                        $level_text .= '-';
-                    }
-                    foreach($child_list[1] as $k1=>$v1)
-                    {
-                        $child_list[1][$k1]->name = $level_text . $v1->name;
-                        array_push($dataSet_cate_backend,$child_list[1][$k1]);
-                    }
-                }
-                else
-                {
-                    array_push($dataSet_cate_backend,$v);
+
                 }
             }
         } catch (\PDOException $ex) {
