@@ -12,7 +12,7 @@ use Exception;
 class Cate
 {
     public static function list($use_sn = '') {
-        
+
         $dataSet_cate = self::get_child_list($use_sn);
 
         return $dataSet_cate;
@@ -20,7 +20,6 @@ class Cate
 
     public static function add()
     {
-        $message = "OK";
         $validator = Validator::make(Request::all(), [
             'cate-name' => 'string|required|max:12',
             'cate-select_photo' => 'string|required',
@@ -45,6 +44,47 @@ class Cate
 
         DB::beginTransaction();
         try {
+            $order = 1;
+            //處理排序問題
+            if(Request::input('cate-order',0) == -1)
+            { //位於開頭
+                DB::table('cate')
+                    ->update([
+                        'order' => DB::raw('`order` +1')
+                    ]);
+            }
+            else if(Request::input('cate-order',0) == 0)
+            {//位於最後一個
+                $data_last = DB::table('cate')
+                    ->select([
+                        'cate.order'
+                    ])
+                    ->orderBy('order','desc')
+                    ->first();
+                if($data_last != null)
+                {
+                    $order = $data_last->order + 1;
+                }
+            }
+            else
+            {//位於誰後面
+                $data_order = DB::table('cate')
+                    ->select([
+                        'cate.order'
+                    ])
+                    ->where('cate.id',Request::input('cate-order',0))
+                    ->first();
+                if($data_order != null)
+                {
+                    $order = $data_order->order + 1;
+                }
+                DB::table('cate')
+                    ->where('cate.id','>',Request::input('cate-order',0))
+                    ->update([
+                        'order' => DB::raw('`order` +1')
+                    ]);
+            }
+
             $insert_id = DB::table('cate')
                 ->insertGetId([
                     'parent_id' => Request::input('cate-parent_id'),
@@ -52,17 +92,13 @@ class Cate
                     'updated_at' => $dtNow,
                     'name' => Request::input('cate-name'),
                     'select_photo' => Request::input('cate-select_photo'),
-                    'order' => 0,
+                    'order' => $order,
                     'use_sn' => Request::input('cate-use_sn'),
                     'enable' => Request::input('cate-enable'),
                     'creat_admin_id' => Request::input('cate-creat_admin_id', null),
                     'update_admin_id' => Request::input('cate-update_admin_id', null),
                 ]);
-            DB::table('cate')
-                ->where('id', $insert_id)
-                ->update([
-                    'order' => $insert_id,
-                ]);
+            
             foreach (Request::input('cate-lang', []) as $k => $v) {
                 DB::table('cate_lang')
                     ->insert([
@@ -86,17 +122,13 @@ class Cate
             \Log::error($ex->getMessage());
         } catch (\Exception $ex) {
             DB::rollBack();
-            throw new Exception($ex->getMessage());
+            throw new Exception($ex);
             \Log::error($ex->getMessage());
         }
-
-        return $message;
-
     }
 
     public static function edit()
     {
-        $message = "OK";
         $validator = Validator::make(Request::all(), [
             'cate-name' => 'string|required|max:12',
             'cate-select_photo' => 'string|required',
@@ -123,10 +155,56 @@ class Cate
         try {
             $dataRow_before = DB::table('cate')
                 ->select([
-                    'cate.select_photo'
+                    'cate.select_photo',
+                    'cate.order',
                 ])
                 ->where('cate.id',Request::input('id'))
                 ->first();
+
+            $order = $dataRow_before->order;
+
+            //處理排序問題
+            if(Request::input('cate-order',0) == -1)
+            { //位於開頭
+                DB::table('cate')
+                    ->where('cate.order','<',$order)
+                    ->update([
+                        'order' => DB::raw('`order` +1')
+                    ]);
+                $order = 1;
+            }
+            else
+            {//位於誰後面
+                $data_order = DB::table('cate')
+                    ->select([
+                        'cate.order'
+                    ])
+                    ->where('cate.id',Request::input('cate-order',0))
+                    ->first();
+                if(Request::input('cate-order',0) > $order)
+                {
+                    DB::table('cate')
+                        ->where('cate.order','>',$order)
+                        ->where('cate.order','<=',$data_order->order)
+                        ->update([
+                            'order' => DB::raw('`order` -1')
+                        ]);
+                    $order = $data_order->order;
+                }
+                else
+                {
+                    DB::table('cate')
+                        ->where('cate.order','>',$data_order->order)
+                        ->where('cate.order','<',$order)
+                        ->update([
+                            'order' => DB::raw('`order` +1')
+                        ]);
+                    $order = $data_order->order +1;
+                }
+                
+            }
+            
+            
             DB::table('cate')
                 ->where('id', Request::input('id'))
                 ->update([
@@ -134,6 +212,7 @@ class Cate
                     'updated_at' => $dtNow,
                     'name' => Request::input('cate-name'),
                     'select_photo' => Request::input('cate-select_photo'),
+                    'order' => $order,
                     'enable' => Request::input('cate-enable'),
                     'update_admin_id' => Request::input('cate-update_admin_id', null),
                 ]);
@@ -158,11 +237,9 @@ class Cate
             \Log::error($ex->getMessage());
         } catch (\Exception $ex) {
             DB::rollBack();
-            throw new Exception($ex->getMessage());
+            throw new Exception($ex);
             \Log::error($ex->getMessage());
         }
-
-        return $message;
     }
 
     public static function detail($id = '')
@@ -178,9 +255,12 @@ class Cate
                     'cate.name',
                     'cate.select_photo',
                     'cate.enable',
+                    'cate.update_admin_id',
+                    'parent_cate.name AS parent_name',
                 ])
-                ->where('id', $id)
-                ->whereNull('delete')
+                ->LeftJoin('cate as parent_cate','cate.parent_id','=','parent_cate.id')
+                ->where('cate.id', $id)
+                ->whereNull('cate.delete')
                 ->first();
             if ($dataRow_cate != null) {
                 $dataSet_lang = DB::table('cate_lang')
@@ -195,21 +275,21 @@ class Cate
                     ->get()
                     ->keyBy('lang');
                 $dataRow_cate->lang = $dataSet_lang;
+                //$dataRow_cate->select_photo = head(Fileupload::getFiles($dataRow_cate->select_photo));
             }
         } catch (\PDOException $ex) {
             throw new PDOException($ex->getMessage());
             \Log::error($ex->getMessage());
         } catch (\Exception $ex) {
-            throw new Exception($ex->getMessage());
+            throw new Exception($ex);
             \Log::error($ex->getMessage());
         }
 
         return $dataRow_cate;
     }
 
-    public static function delete($id = '')
+    public static function delete()
     {
-        $message = "OK";
         $validator = Validator::make(Request::all(), [
             'id' => 'required', //id可能是陣列可能不是
         ]);
@@ -250,16 +330,13 @@ class Cate
             \Log::error($ex->getMessage());
         } catch (\Exception $ex) {
             DB::rollBack();
-            throw new Exception($ex->getMessage());
+            throw new Exception($ex);
             \Log::error($ex->getMessage());
         }
-
-        return $message;
     }
 
     public static function enable($type = '')
     {
-        $message = "OK";
         if ($type !== '') {
             $validator = Validator::make(Request::all(), [
                 'id' => 'required', //id可能是陣列可能不是
@@ -293,17 +370,17 @@ class Cate
                 \Log::error($ex->getMessage());
             } catch (\Exception $ex) {
                 DB::rollBack();
-                throw new Exception($ex->getMessage());
+                throw new Exception($ex);
                 \Log::error($ex->getMessage());
             }
         }
-
-        return $message;
     }
 
-    private static function get_child_list($use_sn = '', $parent_id = null)
+    private static function get_child_list($use_sn = '',$level = 0, $parent_id = null)
     {
-        $dataSet_cate = collect();
+        $level = $level +1;
+        $dataSet_cate_backend = [];
+        $dataSet_cate_front = [];
         try {
             $dataSet_cate = DB::table('cate')
                 ->select([
@@ -317,7 +394,6 @@ class Cate
                 ])
                 ->where('use_sn', $use_sn)
                 ->where('parent_id', $parent_id)
-                ->where('enable', 1)
                 ->whereNull('delete')
                 ->orderBy('cate.order')
                 ->get();
@@ -333,18 +409,39 @@ class Cate
                     ->where('cate_lang.cate_id', $v->id)
                     ->get()
                     ->keyBy('lang');
+                $child_list = self::get_child_list($use_sn, $level, $v->id);
+                
                 $dataSet_cate[$k]->lang = $dataSet_lang;
-                $child_list = self::get_child_list($use_sn, $v->id);
-                $dataSet_cate[$k]->chlid_list = $child_list;
+                $dataSet_cate[$k]->chlid_list = $child_list[1];
+
+                if($v->enable == 1)
+                {
+                    array_push($dataSet_cate_backend,$v);
+                    array_push($dataSet_cate_front,$v);
+                    $level_text = '';
+                    for($i=1;$i<=$level;$i++)
+                    {
+                        $level_text .= '-';
+                    }
+                    foreach($child_list[1] as $k1=>$v1)
+                    {
+                        $child_list[1][$k1]->name = $level_text . $v1->name;
+                        array_push($dataSet_cate_backend,$child_list[1][$k1]);
+                    }
+                }
+                else
+                {
+                    array_push($dataSet_cate_backend,$v);
+                }
             }
         } catch (\PDOException $ex) {
             throw new PDOException($ex->getMessage());
             \Log::error($ex->getMessage());
         } catch (\Exception $ex) {
-            throw new Exception($ex->getMessage());
+            throw new Exception($ex);
             \Log::error($ex->getMessage());
         }
 
-        return $dataSet_cate;
+        return [$dataSet_cate_front,$dataSet_cate_backend];
     }
 }
