@@ -5,20 +5,15 @@ use DB;
 use Request;
 use Validator;
 use Virtualorz\Fileupload\Fileupload;
+use App\Exceptions\ValidateException;
+use PDOException;
+use Exception;
 
 class Cate
 {
-    function list($use_sn = '') {
-        $dataSet_cate = collect();
-        try {
-            $dataSet_cate = self::get_child_list($use_sn);
-        } catch (\PDOException $ex) {
-            DB::rollBack();
-            \Log::error($ex->getMessage());
-        } catch (\Exception $ex) {
-            DB::rollBack();
-            \Log::error($ex->getMessage());
-        }
+    public static function list($use_sn = '') {
+        
+        $dataSet_cate = self::get_child_list($use_sn);
 
         return $dataSet_cate;
     }
@@ -33,9 +28,7 @@ class Cate
             'cate-enable' => 'integer|required',
         ]);
         if ($validator->fails()) {
-            $message = $validator->errors();
-
-            return $message;
+            throw new ValidateException($validator->errors());
         }
 
         foreach (Request::input('cate-lang', []) as $k => $v) {
@@ -44,9 +37,7 @@ class Cate
                 'cate-select_photo' => 'string|required',
             ]);
             if ($validator->fails()) {
-                $message = $validator->errors();
-
-                return $message;
+                throw new ValidateException($validator->errors());
             }
         }
 
@@ -91,12 +82,12 @@ class Cate
 
         } catch (\PDOException $ex) {
             DB::rollBack();
+            throw new PDOException($ex->getMessage());
             \Log::error($ex->getMessage());
-            $message = $ex->getMessage();
         } catch (\Exception $ex) {
             DB::rollBack();
+            throw new Exception($ex->getMessage());
             \Log::error($ex->getMessage());
-            $message = $ex->getMessage();
         }
 
         return $message;
@@ -113,9 +104,7 @@ class Cate
             'cate-enable' => 'integer|required',
         ]);
         if ($validator->fails()) {
-            $message = $validator->errors();
-
-            return $message;
+            throw new ValidateException($validator->errors());
         }
 
         foreach (Request::input('cate-lang', []) as $k => $v) {
@@ -124,9 +113,7 @@ class Cate
                 'cate-select_photo' => 'string|required',
             ]);
             if ($validator->fails()) {
-                $message = $validator->errors();
-
-                return $message;
+                throw new ValidateException($validator->errors());
             }
         }
 
@@ -167,12 +154,12 @@ class Cate
 
         } catch (\PDOException $ex) {
             DB::rollBack();
+            throw new PDOException($ex->getMessage());
             \Log::error($ex->getMessage());
-            $message = $ex->getMessage();
         } catch (\Exception $ex) {
             DB::rollBack();
+            throw new Exception($ex->getMessage());
             \Log::error($ex->getMessage());
-            $message = $ex->getMessage();
         }
 
         return $message;
@@ -210,10 +197,10 @@ class Cate
                 $dataRow_cate->lang = $dataSet_lang;
             }
         } catch (\PDOException $ex) {
-            DB::rollBack();
+            throw new PDOException($ex->getMessage());
             \Log::error($ex->getMessage());
         } catch (\Exception $ex) {
-            DB::rollBack();
+            throw new Exception($ex->getMessage());
             \Log::error($ex->getMessage());
         }
 
@@ -227,9 +214,7 @@ class Cate
             'id' => 'required', //id可能是陣列可能不是
         ]);
         if ($validator->fails()) {
-            $message = $validator->errors();
-
-            return $message;
+            throw new ValidateException($validator->errors());
         }
 
         $ids = Request::input('id', []);
@@ -261,12 +246,12 @@ class Cate
             DB::commit();
         } catch (\PDOException $ex) {
             DB::rollBack();
+            throw new PDOException($ex->getMessage());
             \Log::error($ex->getMessage());
-            $message = $ex->getMessage();
         } catch (\Exception $ex) {
             DB::rollBack();
+            throw new Exception($ex->getMessage());
             \Log::error($ex->getMessage());
-            $message = $ex->getMessage();
         }
 
         return $message;
@@ -280,9 +265,7 @@ class Cate
                 'id' => 'required', //id可能是陣列可能不是
             ]);
             if ($validator->fails()) {
-                $message = $validator->errors();
-
-                return $message;
+                throw new ValidateException($validator->errors());
             }
 
             $ids = Request::input('id', []);
@@ -306,12 +289,12 @@ class Cate
                 DB::commit();
             } catch (\PDOException $ex) {
                 DB::rollBack();
+                throw new PDOException($ex->getMessage());
                 \Log::error($ex->getMessage());
-                $message = $ex->getMessage();
             } catch (\Exception $ex) {
                 DB::rollBack();
+                throw new Exception($ex->getMessage());
                 \Log::error($ex->getMessage());
-                $message = $ex->getMessage();
             }
         }
 
@@ -329,6 +312,7 @@ class Cate
                     'cate.created_at',
                     'cate.updated_at',
                     'cate.name',
+                    'cate.enable',
                     'cate.select_photo',
                 ])
                 ->where('use_sn', $use_sn)
@@ -354,10 +338,10 @@ class Cate
                 $dataSet_cate[$k]->chlid_list = $child_list;
             }
         } catch (\PDOException $ex) {
-            DB::rollBack();
+            throw new PDOException($ex->getMessage());
             \Log::error($ex->getMessage());
         } catch (\Exception $ex) {
-            DB::rollBack();
+            throw new Exception($ex->getMessage());
             \Log::error($ex->getMessage());
         }
 
