@@ -13,7 +13,7 @@ class CreateCateTable extends Migration
      */
     public function up()
     {
-        Schema::create('cate2', function (Blueprint $table) {
+        Schema::create('cate', function (Blueprint $table) {
             $table->bigIncrements('id')->unsigned();
             $table->integer('parent_id')->unsigned()->comment('上層分類ID');
             $table->dateTime('created_at')->comment('建立資料時間');
@@ -28,7 +28,7 @@ class CreateCateTable extends Migration
             $table->integer('update_admin_id')->unsigned()->nullable()->comment('最夠更新資料管理員ID');
         });
 
-        Schema::create('cate_lang2', function (Blueprint $table) {
+        Schema::create('cate_lang', function (Blueprint $table) {
             $table->bigInteger('cate_id')->unsigned()->comment('上層分類ID');
             $table->string('lang',3)->comment('上層分類ID');
             $table->dateTime('created_at')->comment('建立資料時間');
@@ -49,5 +49,6 @@ class CreateCateTable extends Migration
     public function down()
     {
         Schema::dropIfExists('cate');
+        Schema::dropIfExists('cate_lang');
     }
 }
