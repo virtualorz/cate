@@ -324,7 +324,7 @@ class Cate
                     ]);
                 
                 $Fileupload = new Fileupload();
-                $Fileupload::handleFile([], isset($dataRow_before->select_photo) ? $dataRow_before->select_photo : []);
+                $Fileupload->handleFile([], isset($dataRow_before->select_photo) ? $dataRow_before->select_photo : []);
             }
 
             DB::commit();
