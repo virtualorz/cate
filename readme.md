@@ -32,7 +32,7 @@ $dataArray : return array in two elements : [without_sub_cate_structure,with_sub
 #### 2. add data to cate ####
 <pre><code>
 $cate = new Cate();
-$cate->add();
+$cate->add('use type');
 </code></pre>
 with request variable name required : cate-parent_id,ate-name,cate-order,cate-enable,cate-select_photo
 

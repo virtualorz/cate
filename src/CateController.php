@@ -18,12 +18,11 @@ class Cate
         return $dataSet_cate;
     }
 
-    public static function add()
+    public static function add($use_sn = '')
     {
         $validator = Validator::make(Request::all(), [
             'cate-name' => 'string|required|max:12',
             'cate-select_photo' => 'string|required',
-            'cate-use_sn' => 'string|required|max:3',
             'cate-enable' => 'integer|required',
         ]);
         if ($validator->fails()) {
@@ -93,7 +92,7 @@ class Cate
                     'name' => Request::input('cate-name'),
                     'select_photo' => Request::input('cate-select_photo'),
                     'order' => $order,
-                    'use_sn' => Request::input('cate-use_sn'),
+                    'use_sn' => $use_sn,
                     'enable' => Request::input('cate-enable'),
                     'creat_admin_id' => Request::input('cate-creat_admin_id', null),
                     'update_admin_id' => Request::input('cate-update_admin_id', null),
@@ -133,7 +132,6 @@ class Cate
         $validator = Validator::make(Request::all(), [
             'cate-name' => 'string|required|max:12',
             'cate-select_photo' => 'string|required',
-            'cate-use_sn' => 'string|required|max:3',
             'cate-enable' => 'integer|required',
         ]);
         if ($validator->fails()) {
