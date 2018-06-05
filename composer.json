@@ -7,7 +7,7 @@
         }
     ],
     "require": {
-        "virtualorz/fileupload": "^1.0"
+        "virtualorz/fileupload": "^1.0.1"
     },
     "autoload": {
         "psr-4": {

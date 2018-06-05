@@ -112,7 +112,8 @@ class Cate
                         'update_admin_id' => Request::input('cate-update_admin_id', null),
                     ]);
             }
-            Fileupload::handleFile(Request::input('cate-select_photo', '[]'));
+            $Fileupload = new Fileupload();
+            $Fileupload->handleFile(Request::input('cate-select_photo', '[]'));
 
             DB::commit();
 
@@ -227,7 +228,8 @@ class Cate
                         'update_admin_id' => Request::input('cate-update_admin_id', null),
                     ]);
             }
-            Fileupload::handleFile(Request::input('cate-select_photo', '[]'), isset($dataRow_before->select_photo) ? $dataRow_before->select_photo : []);
+            $Fileupload = new Fileupload();
+            $Fileupload->handleFile(Request::input('cate-select_photo', '[]'), isset($dataRow_before->select_photo) ? $dataRow_before->select_photo : []);
 
             DB::commit();
 
@@ -275,7 +277,8 @@ class Cate
                     ->get()
                     ->keyBy('lang');
                 $dataRow_cate->lang = $dataSet_lang;
-                //$dataRow_cate->select_photo = head(Fileupload::getFiles($dataRow_cate->select_photo));
+                //$Fileupload = new Fileupload();
+                //$dataRow_cate->select_photo = head($Fileupload->getFiles($dataRow_cate->select_photo));
             }
         } catch (\PDOException $ex) {
             throw new PDOException($ex->getMessage());
@@ -319,8 +322,9 @@ class Cate
                     ->update([
                         'delete' => $dtNow,
                     ]);
-            
-                Fileupload::handleFile([], isset($dataRow_before->select_photo) ? $dataRow_before->select_photo : []);
+                
+                $Fileupload = new Fileupload();
+                $Fileupload::handleFile([], isset($dataRow_before->select_photo) ? $dataRow_before->select_photo : []);
             }
 
             DB::commit();
