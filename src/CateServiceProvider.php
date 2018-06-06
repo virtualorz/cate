@@ -24,6 +24,8 @@ class CateServiceProvider extends ServiceProvider
      */
     public function register()
     {
-        //
+        $this->app->bind('cate', function () {
+            return new Cate();
+        });
     }
 }

@@ -11,14 +11,14 @@ use Exception;
 
 class Cate
 {
-    public static function list($use_sn = '') {
+    public function list($use_sn = '') {
 
         $dataSet_cate = self::get_child_list($use_sn);
 
         return $dataSet_cate;
     }
 
-    public static function add($use_sn = '')
+    public function add($use_sn = '')
     {
         $validator = Validator::make(Request::all(), [
             'cate-name' => 'string|required|max:12',
@@ -127,7 +127,7 @@ class Cate
         }
     }
 
-    public static function edit()
+    public function edit()
     {
         $validator = Validator::make(Request::all(), [
             'cate-name' => 'string|required|max:12',
@@ -242,7 +242,7 @@ class Cate
         }
     }
 
-    public static function detail($id = '')
+    public function detail($id = '')
     {
         $dataRow_cate = collect();
         try {
@@ -289,7 +289,7 @@ class Cate
         return $dataRow_cate;
     }
 
-    public static function delete()
+    public function delete()
     {
         $validator = Validator::make(Request::all(), [
             'id' => 'required', //id可能是陣列可能不是
@@ -337,7 +337,7 @@ class Cate
         }
     }
 
-    public static function enable($type = '')
+    public function enable($type = '')
     {
         if ($type !== '') {
             $validator = Validator::make(Request::all(), [
@@ -378,7 +378,7 @@ class Cate
         }
     }
 
-    private static function get_child_list($use_sn = '',$level = 0, $parent_id = null)
+    private function get_child_list($use_sn = '',$level = 0, $parent_id = null)
     {
         $level = $level +1;
         $dataSet_cate_backend = [];
