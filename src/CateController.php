@@ -272,6 +272,10 @@ class Cate
                     ->where('cate_lang.cate_id', $dataRow_cate->id)
                     ->get()
                     ->keyBy('lang');
+                foreach($dataSet_lang as $k=>$v)
+                {
+                    $dataSet_lang[$k]->select_photo_link = head(Fileupload::getFiles($v->select_photo));
+                }
                 $dataRow_cate->lang = $dataSet_lang;
                 $dataRow_cate->select_photo_link = head(Fileupload::getFiles($dataRow_cate->select_photo));
             }
